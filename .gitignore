@@ -8,6 +8,9 @@ build/
 # SQLite
 *.db
 
+# Log file
+*.log
+
 ### C ###
 # Prerequisites
 *.d
