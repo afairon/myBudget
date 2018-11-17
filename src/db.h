@@ -15,7 +15,6 @@ struct DB_Handler {
 struct Wallet {
     int id;
     char name[32];
-    time_t created;
 };
 
 struct Category {

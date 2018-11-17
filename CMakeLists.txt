@@ -12,7 +12,9 @@ set(RXI_LOG_SOURCE_FILES
 )
 
 add_library(rxiModule ${RXI_LOG_SOURCE_FILES})
-target_compile_definitions(rxiModule PUBLIC -DLOG_USE_COLOR)
+if (UNIX)
+    target_compile_definitions(rxiModule PUBLIC -DLOG_USE_COLOR)
+endif()
 
 set(SQLITE_SOURCE_FILES
     lib/sqlite/sqlite3.c
@@ -28,8 +30,10 @@ set(SRCS
 add_executable(myBudget ${SRCS})
 target_link_libraries(myBudget sqliteModule)
 target_link_libraries(myBudget rxiModule)
-target_link_libraries(myBudget pthread)
-target_link_libraries(myBudget dl)
+if (UNIX)
+    target_link_libraries(myBudget pthread)
+    target_link_libraries(myBudget dl)
+endif()
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

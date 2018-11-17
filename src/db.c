@@ -39,8 +39,7 @@ int init_db(DB_Handler *handler) {
 
         "CREATE TABLE IF NOT EXISTS wallets(" \
         "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," \
-        "name VARCHAR(32) UNIQUE NOT NULL," \
-        "created DEFAULT CURRENT_TIMESTAMP NOT NULL" \
+        "name VARCHAR(32) UNIQUE NOT NULL" \
         ");" \
 
         "CREATE TABLE IF NOT EXISTS categories(" \
@@ -54,8 +53,10 @@ int init_db(DB_Handler *handler) {
         "description TEXT," \
         "amount REAL NOT NULL," \
         "wallet_id INTEGER NOT NULL," \
-        "category_id INTEGER NOT NULL," \
-        "created DEFAULT CURRENT_TIMESTAMP NOT NULL" \
+        "category_id INTEGER," \
+        "created DEFAULT CURRENT_TIMESTAMP NOT NULL," \
+        "FOREIGN KEY(wallet_id) REFERENCES wallets(id)," \
+        "FOREIGN KEY(category_id) REFERENCES categories(id)" \
         ");" \
 
         "CREATE UNIQUE INDEX IF NOT EXISTS idx_wallet ON wallets(" \
@@ -74,100 +75,65 @@ int init_db(DB_Handler *handler) {
 
     if (rc != SQLITE_OK) {
         handler->zErrMsg = zErrMsg;
-        return 1;
     }
 
-    return 0;
+    return rc;
 }
 
 int add_wallet(DB_Handler *handler, Wallet *wallet) {
-    char *sql, *sql_ft;
+    char *sql;
     char *zErrMsg = 0;
     int rc;
 
-    sql_ft = (char *) malloc(85);
-
-    sql = "BEGIN;" \
-
-        "INSERT INTO wallets(name)" \
-        "VALUES(" \
-        "'%s'" \
-        ");" \
-
-        "COMMIT;";
+    sql = sqlite3_mprintf("INSERT INTO wallets(name)" \
+        "VALUES('%q');",
+        wallet->name);
     
-    sprintf(sql_ft, sql, wallet->name);
-    
-    rc = sqlite3_exec(handler->db, sql_ft, NULL, 0, &zErrMsg);
-
-    free(sql_ft);
+    rc = sqlite3_exec(handler->db, sql, NULL, 0, &zErrMsg);
 
     if (rc != SQLITE_OK) {
         handler->zErrMsg = zErrMsg;
-        return 1;
     }
 
-    return 0;
+    return rc;
 }
 
 int add_category(DB_Handler *handler, Category *category) {
-    char *sql, *sql_ft;
+    char *sql;
     char *zErrMsg = 0;
     int rc;
 
-    sql_ft = (char *) malloc(85);
-
-    sql = "BEGIN;" \
-
-        "INSERT INTO categories(name)" \
-        "VALUES(" \
-        "'%s'" \
-        ");" \
-
-        "COMMIT;";
+    sql = sqlite3_mprintf("INSERT INTO categories(name)" \
+        "VALUES('%q');",
+        category->name);
     
-    sprintf(sql_ft, sql, category->name);
-    
-    rc = sqlite3_exec(handler->db, sql_ft, NULL, 0, &zErrMsg);
-
-    free(sql_ft);
+    rc = sqlite3_exec(handler->db, sql, NULL, 0, &zErrMsg);
 
     if (rc != SQLITE_OK) {
         handler->zErrMsg = zErrMsg;
-        return 1;
     }
 
-    return 0;
+    return rc;
 }
 
 int add_transaction(DB_Handler *handler, Transaction *transaction) {
-    char *sql, *sql_ft;
+    char *sql;
     char *zErrMsg = 0;
     int rc;
 
-    sql_ft = (char *) malloc(256);
-
-    sql = "BEGIN;" \
-
-        "INSERT INTO transactions(" \
+    sql = sqlite3_mprintf("INSERT INTO transactions(" \
         "title," \
         "description," \
         "amount," \
         "wallet_id," \
         "category_id)" \
         "VALUES(" \
-        "'%s'," \
-        "'%s'," \
+        "'%q'," \
+        "'%q'," \
         "%lf," \
         "%d," \
         "%d" \
-        ");" \
-
-        "COMMIT;";
-    
-    sprintf(
-        sql_ft,
-        sql,
+        ");",
         transaction->title,
         transaction->description,
         transaction->amount,
@@ -175,14 +141,11 @@ int add_transaction(DB_Handler *handler, Transaction *transaction) {
         transaction->category_id
     );
     
-    rc = sqlite3_exec(handler->db, sql_ft, NULL, 0, &zErrMsg);
-
-    free(sql_ft);
+    rc = sqlite3_exec(handler->db, sql, NULL, 0, &zErrMsg);
 
     if (rc != SQLITE_OK) {
         handler->zErrMsg = zErrMsg;
-        return 1;
     }
 
-    return 0;
+    return rc;
 }

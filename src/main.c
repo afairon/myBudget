@@ -4,7 +4,7 @@
 #include "db.h"
 #include "sqlite3.h"
 
-int main(int argc, char const *argv[])
+int main(int argc, const char *argv[])
 {
     FILE *outFile;
 
@@ -23,7 +23,7 @@ int main(int argc, char const *argv[])
         exit(1);
     }
     
-    if (init_db(handler) != 0) {
+    if (init_db(handler) != SQLITE_OK) {
         log_fatal("SQL error: %s", handler->zErrMsg);
         sqlite3_free(handler->zErrMsg);
         sqlite3_close(handler->db);
@@ -32,7 +32,6 @@ int main(int argc, char const *argv[])
     }
 
     printf("Welcome to myBudget!\n");
-    log_info("Welcome to myBudget!");
 
     sqlite3_close(handler->db);
 
