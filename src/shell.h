@@ -8,6 +8,8 @@
 
 static char     *sh_read_line(void);
 static char     **sh_read_args(char *, int *);
+static int      clear_args(int, char **);
+
 static int      create_wallet(sqlite3 *, int, char **);
 static int      create_category(sqlite3 *, int, char **);
 static int      create_transaction(sqlite3 *, int, char **);

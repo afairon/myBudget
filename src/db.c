@@ -94,6 +94,8 @@ int add_wallet(sqlite3 *db, Wallet *wallet) {
     
     rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
 
+    sqlite3_free(zErrMsg);
+
     return rc;
 }
 
@@ -107,6 +109,8 @@ int add_category(sqlite3 *db, Category *category) {
         category->name);
     
     rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
+
+    sqlite3_free(zErrMsg);
 
     return rc;
 }
@@ -137,6 +141,8 @@ int add_transaction(sqlite3 *db, Transaction *transaction) {
     );
     
     rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
+
+    sqlite3_free(zErrMsg);
 
     return rc;
 }

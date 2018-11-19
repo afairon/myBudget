@@ -45,7 +45,8 @@ static char **sh_read_args(char *line, int *argc) {
     char *token;
     int position = 0;
 
-    args = (char **) malloc(sizeof(char) * SH_ARGV_SIZE);
+    //args = (char **) malloc(sizeof(char) * SH_ARGV_SIZE);
+    args = (char **) malloc(sizeof(char *) * SH_ARGV_SIZE);
 
     if (!args) {
         log_fatal("Memory allocation error");
@@ -55,18 +56,31 @@ static char **sh_read_args(char *line, int *argc) {
     token = strtok(line, " \t");
     while (token != NULL) {
 
-        *(args+position) = (char *) malloc(sizeof(char) * SH_BUFFER_SIZE);
-        strcpy(*(args+position), token);
+        //*(args+position) = (char *) malloc(sizeof(char) * SH_BUFFER_SIZE);
+        args[position] = (char *) malloc(sizeof(char) * SH_BUFFER_SIZE);
+        //strcpy(*(args+position), token);
+        strcpy(args[position], token);
 
         token = strtok(NULL, " \t");
         position++;
     }
 
-    *(args+position) = NULL;
+    //*(args+position) = NULL;
+    args[position] = (char *) malloc(sizeof(char));
+    args[position] = 0;
 
     *argc = position;
 
     return args;
+}
+
+static int clear_args(int argc, char **args) {
+    int i;
+
+    for (i = 0; i < argc; i++) {
+        free(args[i]);
+    }
+    return 0;
 }
 
 static int create_wallet(sqlite3 *db, int argc, char **args) {
@@ -153,9 +167,12 @@ void sh_spawn(sqlite3 *db) {
             create_transaction(db, argc, args);
         }
 
-        //free(line);
+        free(line);
+        clear_args(argc, args);
+        free(args);
     } while (1);
 
-    /*free(line);
-    free(args);*/
+    free(line);
+    clear_args(argc, args);
+    free(args);
 }

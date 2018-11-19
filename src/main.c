@@ -32,8 +32,6 @@ int main(int argc, const char *argv[])
 
     sh_spawn(handler->db);
 
-    printf("Pointer to DB: %p\n", handler->db);
-
     sqlite3_close(handler->db);
 
     free(handler);
