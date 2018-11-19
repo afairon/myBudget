@@ -7,7 +7,6 @@
 
 DB_Handler *connect(char *name) {
     sqlite3 *db;
-    char *zErrMsg = 0;
     int rc;
 
     if (name == NULL || strcmp("", name) == 0) {
@@ -59,17 +58,17 @@ int init_db(sqlite3 *db) {
         "FOREIGN KEY(category_id) REFERENCES categories(id)" \
         ");" \
 
-        "CREATE UNIQUE INDEX IF NOT EXISTS idx_wallet ON wallets(" \
+        "CREATE INDEX IF NOT EXISTS idx_wallet ON wallets(" \
         "id," \
         "name" \
         ");" \
 
-        "CREATE UNIQUE INDEX IF NOT EXISTS idx_category ON categories(" \
+        "CREATE INDEX IF NOT EXISTS idx_category ON categories(" \
         "id," \
         "name" \
         ");" \
 
-        "CREATE UNIQUE INDEX IF NOT EXISTS idx_transaction ON transactions(" \
+        "CREATE INDEX IF NOT EXISTS idx_transaction ON transactions(" \
         "title," \
         "amount,"\
         "wallet_id," \
@@ -79,6 +78,12 @@ int init_db(sqlite3 *db) {
         "COMMIT;";
     
     rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
+
+    if (rc != SQLITE_OK) {
+        log_fatal("%s", zErrMsg);
+    }
+
+    sqlite3_free(zErrMsg);
 
     return rc;
 }
@@ -94,6 +99,11 @@ int add_wallet(sqlite3 *db, Wallet *wallet) {
     
     rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
 
+    if (rc != SQLITE_OK) {
+        log_warn("%s", zErrMsg);
+    }
+
+    sqlite3_free(sql);
     sqlite3_free(zErrMsg);
 
     return rc;
@@ -110,6 +120,11 @@ int add_category(sqlite3 *db, Category *category) {
     
     rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
 
+    if (rc != SQLITE_OK) {
+        log_warn("%s", zErrMsg);
+    }
+
+    sqlite3_free(sql);
     sqlite3_free(zErrMsg);
 
     return rc;
@@ -142,6 +157,84 @@ int add_transaction(sqlite3 *db, Transaction *transaction) {
     
     rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
 
+    if (rc != SQLITE_OK) {
+        log_warn("%s", zErrMsg);
+    }
+
+    sqlite3_free(sql);
+    sqlite3_free(zErrMsg);
+
+    return rc;
+}
+
+int remove_wallet(sqlite3 *db, Wallet *wallet) {
+    char *sql;
+    char *zErrMsg = 0;
+    int rc;
+
+    sql = sqlite3_mprintf("BEGIN;" \
+        "DELETE FROM transactions WHERE " \
+        "transactions.wallet_id = %d;" \
+        "DELETE FROM wallets WHERE " \
+        "wallets.id = %d;" \
+        "COMMIT;",
+        wallet->id,
+        wallet->id
+    );
+    
+    rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
+
+    if (rc != SQLITE_OK) {
+        log_warn("%s", zErrMsg);
+    }
+
+    sqlite3_free(sql);
+    sqlite3_free(zErrMsg);
+
+    return rc;
+}
+
+int remove_category(sqlite3 *db, Category *category) {
+    char *sql;
+    char *zErrMsg = 0;
+    int rc;
+
+    sql = sqlite3_mprintf("BEGIN;" \
+        "DELETE FROM categories WHERE " \
+        "categories.id = %d;" \
+        "COMMIT;",
+        category->id
+    );
+    
+    rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
+
+    if (rc != SQLITE_OK) {
+        log_warn("%s", zErrMsg);
+    }
+
+    sqlite3_free(sql);
+    sqlite3_free(zErrMsg);
+
+    return rc;
+}
+
+int remove_transaction(sqlite3 *db, Transaction *transaction) {
+    char *sql;
+    char *zErrMsg = 0;
+    int rc;
+
+    sql = sqlite3_mprintf("DELETE FROM transactions WHERE " \
+        "transactions.id = %d;",
+        transaction->id
+    );
+    
+    rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
+
+    if (rc != SQLITE_OK) {
+        log_warn("%s", zErrMsg);
+    }
+
+    sqlite3_free(sql);
     sqlite3_free(zErrMsg);
 
     return rc;

@@ -14,6 +14,7 @@ struct DB_Handler {
 struct Wallet {
     int id;
     char name[32];
+    double balance;
 };
 
 struct Category {
@@ -39,8 +40,13 @@ typedef struct Transaction Transaction;
 struct DB_Handler *connect(char *);
 
 int init_db(sqlite3 *);
+
 int add_wallet(sqlite3 *, Wallet *);
 int add_category(sqlite3 *, Category *);
 int add_transaction(sqlite3 *, Transaction *);
+
+int remove_wallet(sqlite3 *, Wallet *);
+int remove_category(sqlite3 *, Category *);
+int remove_transaction(sqlite3 *, Transaction *);
 
 #endif

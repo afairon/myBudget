@@ -30,7 +30,7 @@ int main(int argc, const char *argv[])
         exit(1);
     }
 
-    sh_spawn(handler->db);
+    sh_spawn(handler);
 
     sqlite3_close(handler->db);
 
