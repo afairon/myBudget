@@ -9,7 +9,6 @@
 struct DB_Handler {
     sqlite3 *db;
     char *db_name;
-    char *zErrMsg;
 };
 
 struct Wallet {
@@ -39,9 +38,9 @@ typedef struct Transaction Transaction;
 
 struct DB_Handler *connect(char *);
 
-int init_db(DB_Handler *);
-int add_wallet(DB_Handler *, Wallet *);
-int add_category(DB_Handler *, Category *);
-int add_transaction(DB_Handler *, Transaction *);
+int init_db(sqlite3 *);
+int add_wallet(sqlite3 *, Wallet *);
+int add_category(sqlite3 *, Category *);
+int add_transaction(sqlite3 *, Transaction *);
 
 #endif

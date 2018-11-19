@@ -3,6 +3,7 @@
 #include "log.h"
 #include "db.h"
 #include "sqlite3.h"
+#include "shell.h"
 
 int main(int argc, const char *argv[])
 {
@@ -23,15 +24,15 @@ int main(int argc, const char *argv[])
         exit(1);
     }
     
-    if (init_db(handler) != SQLITE_OK) {
-        log_fatal("SQL error: %s", handler->zErrMsg);
-        sqlite3_free(handler->zErrMsg);
+    if (init_db(handler->db) != SQLITE_OK) {
         sqlite3_close(handler->db);
         free(handler);
         exit(1);
     }
 
-    printf("Welcome to myBudget!\n");
+    sh_spawn(handler->db);
+
+    printf("Pointer to DB: %p\n", handler->db);
 
     sqlite3_close(handler->db);
 

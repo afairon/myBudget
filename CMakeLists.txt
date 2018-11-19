@@ -24,6 +24,7 @@ add_library(sqliteModule ${SQLITE_SOURCE_FILES})
 
 set(SRCS
     src/main.c
+    src/shell.c
     src/db.c
 )
 

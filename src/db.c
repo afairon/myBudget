@@ -30,7 +30,7 @@ DB_Handler *connect(char *name) {
     return handler;
 }
 
-int init_db(DB_Handler *handler) {
+int init_db(sqlite3 *db) {
     char *sql;
     char *zErrMsg = 0;
     int rc;
@@ -69,18 +69,21 @@ int init_db(DB_Handler *handler) {
         "name" \
         ");" \
 
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_transaction ON transactions(" \
+        "title," \
+        "amount,"\
+        "wallet_id," \
+        "category_id" \
+        ");" \
+
         "COMMIT;";
     
-    rc = sqlite3_exec(handler->db, sql, NULL, 0, &zErrMsg);
-
-    if (rc != SQLITE_OK) {
-        handler->zErrMsg = zErrMsg;
-    }
+    rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
 
     return rc;
 }
 
-int add_wallet(DB_Handler *handler, Wallet *wallet) {
+int add_wallet(sqlite3 *db, Wallet *wallet) {
     char *sql;
     char *zErrMsg = 0;
     int rc;
@@ -89,16 +92,12 @@ int add_wallet(DB_Handler *handler, Wallet *wallet) {
         "VALUES('%q');",
         wallet->name);
     
-    rc = sqlite3_exec(handler->db, sql, NULL, 0, &zErrMsg);
-
-    if (rc != SQLITE_OK) {
-        handler->zErrMsg = zErrMsg;
-    }
+    rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
 
     return rc;
 }
 
-int add_category(DB_Handler *handler, Category *category) {
+int add_category(sqlite3 *db, Category *category) {
     char *sql;
     char *zErrMsg = 0;
     int rc;
@@ -107,16 +106,12 @@ int add_category(DB_Handler *handler, Category *category) {
         "VALUES('%q');",
         category->name);
     
-    rc = sqlite3_exec(handler->db, sql, NULL, 0, &zErrMsg);
-
-    if (rc != SQLITE_OK) {
-        handler->zErrMsg = zErrMsg;
-    }
+    rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
 
     return rc;
 }
 
-int add_transaction(DB_Handler *handler, Transaction *transaction) {
+int add_transaction(sqlite3 *db, Transaction *transaction) {
     char *sql;
     char *zErrMsg = 0;
     int rc;
@@ -141,11 +136,7 @@ int add_transaction(DB_Handler *handler, Transaction *transaction) {
         transaction->category_id
     );
     
-    rc = sqlite3_exec(handler->db, sql, NULL, 0, &zErrMsg);
-
-    if (rc != SQLITE_OK) {
-        handler->zErrMsg = zErrMsg;
-    }
+    rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
 
     return rc;
 }
