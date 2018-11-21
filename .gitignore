@@ -2,6 +2,9 @@
 # Created by https://www.gitignore.io/api/c,ninja,cmake
 # Edit at https://www.gitignore.io/?templates=c,ninja,cmake
 
+# VSCode
+.vscode
+
 # Build
 build/
 

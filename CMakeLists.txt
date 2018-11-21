@@ -4,11 +4,11 @@ project(myBudget VERSION 0.1.0)
 include(CTest)
 enable_testing()
 
-include_directories(lib/rxi/log)
-include_directories(lib/sqlite)
+include_directories(include)
+include_directories(include/rxi)
 
 set(RXI_LOG_SOURCE_FILES
-    lib/rxi/log/log.c
+    lib/rxi/log.c
 )
 
 add_library(rxiModule ${RXI_LOG_SOURCE_FILES})
@@ -26,6 +26,7 @@ set(SRCS
     src/main.c
     src/shell.c
     src/db.c
+    src/misc.c
 )
 
 add_executable(myBudget ${SRCS})
@@ -35,6 +36,7 @@ if (UNIX)
     target_link_libraries(myBudget pthread)
     target_link_libraries(myBudget dl)
 endif()
+target_compile_definitions(myBudget PUBLIC -DPRETTY_PRINT)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
