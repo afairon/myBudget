@@ -14,6 +14,9 @@ static char     *sh_read_line(void);
 static char     **sh_read_args(char *, int *);
 static void     clear_args(int, char **);
 
+static int      sh_is_int(char *);
+static int      sh_is_float(char *);
+
 static int      create_wallet(Wallet *);
 static int      create_category(Category *);
 static int      create_transaction(Transaction *);
@@ -40,13 +43,19 @@ static int      wallet_cmd(int, char **);
 static int      category_cmd(int, char **);
 static int      transaction_cmd(int, char **);
 
-static int      categories_report(int, char **);
+static int      categories_overview(int, char **);
+
+static int      wallet_help(void);
+static int      category_help(void);
+static int      transaction_help(void);
+static int      export_help(void);
+static int      overview_help(void);
 
 static int      sh_help(int, char **);
 static int      sh_exit(int, char **);
 static int      sh_exec(int, char **);
 static int      sh_sub_exec(int, char **);
 
-void    sh_spawn(DB_Handler *);
+void    sh_spawn(void);
 
 #endif

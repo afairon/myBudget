@@ -6,8 +6,11 @@
 #include "rxi/log.h"
 #include "sqlite3/sqlite3.h"
 
+// SQLite connetion
+sqlite3 *db;
+
+// connect establishes a connection to SQLite database.
 DB_Handler *connect(const char *name) {
-    sqlite3 *db;
     int rc;
 
     if (name == NULL || name[0] == '\0') {
@@ -30,7 +33,9 @@ DB_Handler *connect(const char *name) {
     return handler;
 }
 
-int init_db(sqlite3 *db) {
+// init_db creates three tables : wallets, categories and transactions.
+// This also creates indexes.
+int init_db() {
     char *sql;
     char *zErrMsg = 0;
     int rc;
@@ -88,7 +93,8 @@ int init_db(sqlite3 *db) {
     return rc;
 }
 
-int add_wallet(sqlite3 *db, Wallet *wallet) {
+// add_wallet inserts a new wallet into the database.
+int add_wallet(Wallet *wallet) {
     char *sql;
     char *zErrMsg = 0;
     int rc;
@@ -100,17 +106,19 @@ int add_wallet(sqlite3 *db, Wallet *wallet) {
     
     rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
 
+    sqlite3_free(sql);
+
     if (rc != SQLITE_OK) {
         log_warn("%s", zErrMsg);
     }
 
-    sqlite3_free(sql);
     sqlite3_free(zErrMsg);
 
     return rc;
 }
 
-int add_category(sqlite3 *db, Category *category) {
+// add_category inserts a new category into the database.
+int add_category(Category *category) {
     char *sql;
     char *zErrMsg = 0;
     int rc;
@@ -122,17 +130,19 @@ int add_category(sqlite3 *db, Category *category) {
     
     rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
 
+    sqlite3_free(sql);
+
     if (rc != SQLITE_OK) {
         log_warn("%s", zErrMsg);
     }
 
-    sqlite3_free(sql);
     sqlite3_free(zErrMsg);
 
     return rc;
 }
 
-int add_transaction(sqlite3 *db, Transaction *transaction) {
+// add_transaction inserts a new transaction into the database.
+int add_transaction(Transaction *transaction) {
     char *sql;
     char *zErrMsg = 0;
     int rc;
@@ -159,17 +169,20 @@ int add_transaction(sqlite3 *db, Transaction *transaction) {
     
     rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
 
+    sqlite3_free(sql);
+
     if (rc != SQLITE_OK) {
         log_warn("%s", zErrMsg);
     }
 
-    sqlite3_free(sql);
     sqlite3_free(zErrMsg);
 
     return rc;
 }
 
-Queue *get_wallets(sqlite3 *db, Wallet *wallet) {
+// get_wallets retrieves wallets and put them into
+// a linked list.
+Queue *get_wallets(Wallet *wallet) {
     char *sql;
     int rc;
     Queue *origin, *last;
@@ -177,18 +190,15 @@ Queue *get_wallets(sqlite3 *db, Wallet *wallet) {
 
     origin = NULL;
 
-    sql = sqlite3_mprintf("SELECT wallets.id," \
+    sql = "SELECT wallets.id," \
         "wallets.name," \
         "SUM(transactions.amount) AS balance " \
         "FROM wallets " \
         "LEFT JOIN transactions ON wallets.id = transactions.wallet_id " \
         "GROUP BY wallets.name " \
-        "ORDER BY wallets.id ASC;"
-    );
+        "ORDER BY wallets.id ASC;";
 
     rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
-
-    sqlite3_free(sql);
 
     if (rc != SQLITE_OK) {
         return origin;
@@ -236,7 +246,9 @@ Queue *get_wallets(sqlite3 *db, Wallet *wallet) {
     return origin;
 }
 
-Queue *get_categories(sqlite3 *db, Category *category) {
+// get_categories retrieves categories and put them into
+// a linked list.
+Queue *get_categories(Category *category) {
     char *sql;
     int rc;
     Queue *origin, *last;
@@ -244,14 +256,11 @@ Queue *get_categories(sqlite3 *db, Category *category) {
 
     origin = NULL;
 
-    sql = sqlite3_mprintf("SELECT categories.id," \
+    sql = "SELECT categories.id," \
         "categories.name " \
-        "FROM categories;"
-    );
+        "FROM categories;";
 
     rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
-
-    sqlite3_free(sql);
 
     if (rc != SQLITE_OK) {
         return origin;
@@ -297,7 +306,9 @@ Queue *get_categories(sqlite3 *db, Category *category) {
     return origin;
 }
 
-Queue *get_transactions(sqlite3 *db, Transaction *transaction) {
+// get_transactions retrieves transactions and put them into
+// a linked list.
+Queue *get_transactions(Transaction *transaction) {
     char *sql;
     int rc;
     Queue *origin, *last;
@@ -305,7 +316,7 @@ Queue *get_transactions(sqlite3 *db, Transaction *transaction) {
 
     origin = NULL;
 
-    sql = sqlite3_mprintf("SELECT transactions.id," \
+    sql = "SELECT transactions.id," \
         "transactions.name," \
         "transactions.description," \
         "transactions.amount," \
@@ -316,12 +327,9 @@ Queue *get_transactions(sqlite3 *db, Transaction *transaction) {
         "FROM transactions " \
         "LEFT JOIN wallets ON transactions.wallet_id = wallets.id " \
         "LEFT JOIN categories ON transactions.category_id = categories.id " \
-        "GROUP BY transactions.id;"
-    );
+        "GROUP BY transactions.id;";
 
     rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
-
-    sqlite3_free(sql);
 
     if (rc != SQLITE_OK) {
         return origin;
@@ -391,7 +399,9 @@ Queue *get_transactions(sqlite3 *db, Transaction *transaction) {
     return origin;
 }
 
-Queue *get_categories_report(sqlite3 *db, Category *category) {
+// get_categories_overview retrieves categories, spent amounts and put them into
+// a linked list.
+Queue *get_categories_overview(Category *category) {
     char *sql;
     int rc;
     Queue *origin, *last;
@@ -399,18 +409,15 @@ Queue *get_categories_report(sqlite3 *db, Category *category) {
 
     origin = NULL;
 
-    sql = sqlite3_mprintf("SELECT categories.id," \
+    sql = "SELECT categories.id," \
         "categories.name," \
         "SUM(transactions.amount) AS amount " \
         "FROM categories " \
         "LEFT JOIN transactions ON categories.id = transactions.category_id " \
         "GROUP BY categories.name " \
-        "ORDER BY amount ASC;"
-    );
+        "ORDER BY amount ASC;";
 
     rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
-
-    sqlite3_free(sql);
 
     if (rc != SQLITE_OK) {
         return origin;
@@ -451,7 +458,8 @@ Queue *get_categories_report(sqlite3 *db, Category *category) {
     return origin;
 }
 
-int remove_wallet(sqlite3 *db, Wallet *wallet) {
+// remove_wallet deletes wallet from database.
+int remove_wallet(Wallet *wallet) {
     char *sql;
     char *zErrMsg = 0;
     int rc;
@@ -468,66 +476,106 @@ int remove_wallet(sqlite3 *db, Wallet *wallet) {
     
     rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
 
+    sqlite3_free(sql);
+
     if (rc != SQLITE_OK) {
         log_warn("%s", zErrMsg);
     }
 
-    sqlite3_free(sql);
     sqlite3_free(zErrMsg);
 
     return rc;
 }
 
-int remove_category(sqlite3 *db, Category *category) {
+// remove_category deletes category from database.
+int remove_category(Category *category) {
     char *sql;
     char *zErrMsg = 0;
     int rc;
 
     sql = sqlite3_mprintf("BEGIN;" \
+        "UPDATE transactions SET category_id = 0 WHERE " \
+        "category_id = %d;" \
         "DELETE FROM categories WHERE " \
-        "categories.id = %d OR " \
-        "categories.name = '%q';" \
+        "id = %d;" \
         "COMMIT;",
         category->id,
-        category->name
+        category->id
     );
     
     rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
+
+    sqlite3_free(sql);
 
     if (rc != SQLITE_OK) {
         log_warn("%s", zErrMsg);
     }
 
-    sqlite3_free(sql);
     sqlite3_free(zErrMsg);
 
     return rc;
 }
 
-int remove_transaction(sqlite3 *db, Transaction *transaction) {
+// remove_transaction removes transaction from database.
+int remove_transaction(Transaction *transaction) {
     char *sql;
     char *zErrMsg = 0;
     int rc;
 
-    sql = sqlite3_mprintf("DELETE FROM transactions WHERE " \
-        "transactions.id = %d OR " \
-        "transactions.name = '%q';",
+    sql = sqlite3_mprintf("BEGIN;" \
+        "DELETE FROM transactions WHERE " \
+        "transactions.id = %d;" \
+        "COMMIT;",
         transaction->id,
         transaction->name
     );
     
     rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
 
+    sqlite3_free(sql);
+
     if (rc != SQLITE_OK) {
         log_warn("%s", zErrMsg);
     }
 
-    sqlite3_free(sql);
     sqlite3_free(zErrMsg);
 
     return rc;
 }
 
+// count_records returns number of records in the table.
+unsigned int count_records(RECORD_TYPES type) {
+    char *sql;
+    int rc;
+    unsigned int count = 0;
+    sqlite3_stmt *stmt;
+
+    switch (type) {
+        case WALLET_TYPE:
+            sql = "SELECT COUNT(*) from wallets;";
+            break;
+        case CATEGORY_TYPE:
+            sql = "SELECT COUNT(*) from categories;";
+            break;
+        case TRANSACTION_TYPE:
+            sql = "SELECT COUNT(*) from transactions;";
+            break;
+        default:
+            return 0;
+    }
+
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+
+    while (sqlite3_step(stmt) != SQLITE_DONE) {
+        count = sqlite3_column_int(stmt, 0);
+    }
+
+    sqlite3_finalize(stmt);
+
+    return count;
+}
+
+// clear_queue frees up the memory.
 void clear_queue(Queue *origin) {
     Queue *temp;
     while (origin != NULL) {

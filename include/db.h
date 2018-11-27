@@ -51,21 +51,23 @@ typedef struct Queue {
 
 DB_Handler *connect(const char *);
 
-int init_db(sqlite3 *);
+int init_db();
 
-int add_wallet(sqlite3 *, Wallet *);
-int add_category(sqlite3 *, Category *);
-int add_transaction(sqlite3 *, Transaction *);
+int add_wallet(Wallet *);
+int add_category(Category *);
+int add_transaction(Transaction *);
 
-Queue *get_wallets(sqlite3 *, Wallet *);
-Queue *get_categories(sqlite3 *, Category *);
-Queue *get_transactions(sqlite3 *, Transaction *);
+Queue *get_wallets(Wallet *);
+Queue *get_categories(Category *);
+Queue *get_transactions(Transaction *);
 
-Queue *get_categories_report(sqlite3 *, Category *);
+Queue *get_categories_overview(Category *);
 
-int remove_wallet(sqlite3 *, Wallet *);
-int remove_category(sqlite3 *, Category *);
-int remove_transaction(sqlite3 *, Transaction *);
+int remove_wallet(Wallet *);
+int remove_category(Category *);
+int remove_transaction(Transaction *);
+
+unsigned int count_records(RECORD_TYPES);
 
 void clear_queue(Queue *);
 

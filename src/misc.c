@@ -9,6 +9,7 @@
 
 #include "misc.h"
 
+// pretty_printf prints message with icon and color.
 void pretty_printf(FILE *output, int type, const char *fmt, ...) {
     
     #ifdef PRETTY_PRINT
@@ -29,6 +30,9 @@ void pretty_printf(FILE *output, int type, const char *fmt, ...) {
     #ifdef PRETTY_PRINT
     switch (type) {
         #ifdef __unix__
+        case PRINT_INFO:
+            fprintf(output, "\x1b[32m\u2139 ");
+            break;
         case PRINT_SUCCESS:
             fprintf(output, "\x1b[32m\u2714 ");
             break;
@@ -41,12 +45,11 @@ void pretty_printf(FILE *output, int type, const char *fmt, ...) {
         default:
             break;
         #elif defined(_WIN32) || defined(_WIN64)
+        case PRINT_INFO:
         case PRINT_SUCCESS:
             SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
             break;
         case PRINT_FAIL:
-            SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
-            break;
         case PRINT_WARNING:
             SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
             break;

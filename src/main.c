@@ -9,10 +9,17 @@
 #include "rxi/log.h"
 #include "sqlite3/sqlite3.h"
 
+// Database handler
 DB_Handler *handler;
+
+// File stream
 FILE *outFile = NULL;
 
+// signal_handler gracefully closes the application.
+// This function closes the connection to database and
+// close file logger.
 void signal_handler(int signum) {
+    log_info("Closing database \"%s\"", handler->db_name);
     sqlite3_close(handler->db);
     if (outFile != NULL) {
         fclose(outFile);
@@ -21,11 +28,11 @@ void signal_handler(int signum) {
     exit(1);
 }
 
-int main(int argc, const char *argv[])
-{
+int main(int argc, const char *argv[]) {
     int i;
     int LOG_F = 0;
 
+    // Lookup for command-line arguments
     for (i = 0; i < argc; i++) {
         if (
             strcmp(argv[i], "-l") == 0 ||
@@ -44,8 +51,9 @@ int main(int argc, const char *argv[])
         }
     }
 
+    // Enable file logger
     if (LOG_F) {
-        outFile = fopen("budget.log", "a");
+        outFile = fopen("myBudget.log", "a");
         if (outFile == NULL) {
             log_fatal("Couldn't initialize log file");
         } else {
@@ -53,6 +61,7 @@ int main(int argc, const char *argv[])
         }
     }
 
+    // Establish connection
     handler = connect(NULL);
     if (handler->db == NULL) {
         log_fatal("Error sqlite: Couldn't open database \"%s\"", handler->db_name);
@@ -60,15 +69,18 @@ int main(int argc, const char *argv[])
         exit(1);
     }
     
-    if (init_db(handler->db) != SQLITE_OK) {
+    // Initialize database
+    if (init_db() != SQLITE_OK) {
         sqlite3_close(handler->db);
         free(handler);
         exit(1);
     }
 
+    // Handle OS Signal
     signal(SIGINT, signal_handler);
 
-    sh_spawn(handler);
+    // Init shell
+    sh_spawn();
 
     sqlite3_close(handler->db);
 
