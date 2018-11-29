@@ -1,0 +1,49 @@
+@startuml myBudget
+
+(*) --> "Read commandline arguments"
+
+if "Enable log?" then
+    -->[True] "Open File Stream"
+    --> "Connect to database"
+else
+    [False] if "Show help?" then
+        -->[True] "Print help"
+        --> (*)
+    else
+        -->[False] "Connect to database"
+    endif
+endif
+
+if "Connection success" then
+    -->[True] "Initialize Database"
+    if "Initialize successful" then
+        -->[True] "Spawn Shell"
+        --> "Read Line"
+    else
+        -->[False] (*)
+    endif
+else
+    [False] if "File Stream Not NULL" then
+        -->[True] "Close File Stream"
+        --> (*)
+    else
+        -->[False] (*)
+    endif
+endif
+
+"Read Line" --> "Read Arguments"
+--> "Execute"
+
+if "Execution code != 0" then
+    -->[True] "Read Line"
+else
+    -->[False] "Exit Shell"
+    if "File Stream Not NULL" then
+        -->[True] "Close File Stream"
+        --> (*)
+    else
+        -->[False] (*)
+    endif
+endif
+
+@enduml

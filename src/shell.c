@@ -440,6 +440,7 @@ static int create_record(RECORD_TYPES type, Record *record) {
 
     switch (type) {
         case WALLET_TYPE:
+            // Check if wallet name is not empty
             if (record->wallet.name[0] == '\0') {
                 for (;;) {
                     printf("Name: ");
@@ -459,6 +460,7 @@ static int create_record(RECORD_TYPES type, Record *record) {
             create_wallet(&record->wallet);
             break;
         case CATEGORY_TYPE:
+            // Check if category name is not empty
             if (record->category.name[0] == '\0') {
                 for (;;) {
                     printf("Name: ");
@@ -482,6 +484,7 @@ static int create_record(RECORD_TYPES type, Record *record) {
                 pretty_fail("You cannot create a transaction without any wallet.");
                 break;
             }
+            // Check if transaction's name is not empty
             if (record->transaction.name[0] == '\0') {
                 for (;;) {
                     printf("Name: ");
@@ -498,6 +501,7 @@ static int create_record(RECORD_TYPES type, Record *record) {
                     free(line);
                 }
             }
+            // Check if transaction's description is not empty
             if (record->transaction.description[0] == '\0') {
                 for (;;) {
                     printf("Description: ");
@@ -530,6 +534,7 @@ static int create_record(RECORD_TYPES type, Record *record) {
                     free(line);
                 }
             }
+            // Check if transaction linked to the wallet is not empty
             if (record->transaction.wallet.name[0] == '\0') {
                 for (;;) {
                     printf("Wallet Name: ");
@@ -612,6 +617,7 @@ static int delete_record(RECORD_TYPES type, Record *record) {
 
     switch (type) {
         case WALLET_TYPE:
+            // List of wallets is empty
             if (count_records(WALLET_TYPE) < 1) {
                 pretty_fail("No wallet is available.");
                 break;
@@ -638,6 +644,7 @@ static int delete_record(RECORD_TYPES type, Record *record) {
                     free(line);
                 }
             }
+            // Check if record exists
             if (record->wallet.id == 0) {
                 break;
             }
@@ -649,6 +656,7 @@ static int delete_record(RECORD_TYPES type, Record *record) {
             delete_wallet(&record->wallet);
             break;
         case CATEGORY_TYPE:
+            // Lists of categories is empty
             if (count_records(CATEGORY_TYPE) < 1) {
                 pretty_fail("No category is available.");
                 break;
@@ -675,12 +683,14 @@ static int delete_record(RECORD_TYPES type, Record *record) {
                     free(line);
                 }
             }
+            // Check if record exists
             if (record->category.id == 0) {
                 break;
             }
             delete_category(&record->category);
             break;
         case TRANSACTION_TYPE:
+            // List of transactions is empty
             if (count_records(TRANSACTION_TYPE) < 1) {
                 pretty_fail("No transaction is available.");
                 break;
@@ -707,6 +717,7 @@ static int delete_record(RECORD_TYPES type, Record *record) {
                     show_transactions(NULL);
                 }   
             }
+            // Check if records exists
             if (record->transaction.id == 0) {
                 break;
             }
